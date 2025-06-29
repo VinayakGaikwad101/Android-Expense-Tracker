@@ -75,6 +75,44 @@ app.get("/api/transactions/:userId", async (req, res) => {
   }
 });
 
+app.delete("/api/transactions/:transactionId", async (req, res) => {
+  try {
+    const { transactionId } = req.params;
+
+    // Convert to number and validate
+    const id = parseInt(transactionId);
+
+    // Check if conversion was successful and number is positive
+    if (isNaN(id) || id <= 0) {
+      return res.status(400).json({
+        message: "Invalid transaction ID format. Must be a positive number",
+        success: false,
+      });
+    }
+
+    const deletedTransaction = await sql`
+    DELETE FROM transactions WHERE id = ${id} RETURNING *`;
+
+    if (deletedTransaction.length === 0) {
+      return res.status(404).json({
+        message: "Transaction not found",
+        success: false,
+      });
+    }
+
+    return res.status(200).json({
+      message: "Transaction deleted successfully",
+      success: true,
+      deletedTransaction,
+    });
+  } catch (error) {
+    console.error("Error in delete transaction controller: ", error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", success: false });
+  }
+});
+
 initDB().then(() => {
   app.listen(PORT, () => {
     console.log(`Server running on: http://localhost:${PORT}`);
