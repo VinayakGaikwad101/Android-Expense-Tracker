@@ -2,15 +2,15 @@
 import { neon } from "@neondatabase/serverless";
 import "dotenv/config";
 
+// constants
+const DATABASE_URL = process.env.DATABASE_URL;
+
+// creates a sql connection
+export const sql = neon(DATABASE_URL);
+
 // initialize database
 export async function initDB() {
   try {
-    // constants
-    const DATABASE_URL = process.env.DATABASE_URL;
-
-    // creates a sql connection
-    const sql = neon(DATABASE_URL);
-
     await sql`CREATE TABLE IF NOT EXISTS transactions(
         id SERIAL PRIMARY KEY, -- primary key means incremented by 1, eg: 1, 2, 3, 4, ...
         user_id VARCHAR(255) NOT NULL, -- variable character(string/text), of max length of 255 characters
