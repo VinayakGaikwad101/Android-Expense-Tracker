@@ -1,3 +1,5 @@
+import { sql } from "../config/db.config.js";
+
 export const createTransaction = async (req, res) => {
   try {
     const { user_id, title, amount, category } = req.body;
