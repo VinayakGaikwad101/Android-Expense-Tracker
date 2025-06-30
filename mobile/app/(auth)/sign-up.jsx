@@ -1,6 +1,6 @@
 import { Text, TextInput, TouchableOpacity, View, Image } from "react-native";
 import { useSignUp } from "@clerk/clerk-expo";
-import { useRouter } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { useState } from "react";
 import { styles } from "@/assets/styles/auth.styles.js";
 import { COLORS } from "@/constants/colors.js";
@@ -21,6 +21,9 @@ export default function SignUpScreen() {
   const onSignUpPress = async () => {
     if (!isLoaded) return;
 
+    // Clear previous errors
+    setError("");
+
     // Start sign-up process using email and password provided
     try {
       await signUp.create({
@@ -35,16 +38,51 @@ export default function SignUpScreen() {
       // and capture OTP code
       setPendingVerification(true);
     } catch (err) {
-      // See https://clerk.com/docs/custom-flows/error-handling
-      // for more info on error handling
       console.error(JSON.stringify(err, null, 2));
-      setError(err.errors?.[0]?.message || "An error occurred during sign up");
+
+      if (err.errors && err.errors.length > 0) {
+        const errorCode = err.errors[0].code;
+
+        switch (errorCode) {
+          case "form_identifier_exists":
+            setError("An account with this email already exists");
+            break;
+          case "form_password_pwned":
+            setError("This password has been found in a data breach. Please choose a different password");
+            break;
+          case "form_password_length_too_short":
+            setError("Password is too short");
+            break;
+          case "form_password_no_uppercase":
+            setError("Password must contain at least one uppercase letter");
+            break;
+          case "form_password_no_lowercase":
+            setError("Password must contain at least one lowercase letter");
+            break;
+          case "form_password_no_numbers":
+            setError("Password must contain at least one number");
+            break;
+          case "form_identifier_invalid":
+            setError("Please enter a valid email address");
+            break;
+          case "form_param_nil":
+            setError("Please fill in all required fields");
+            break;
+          default:
+            setError(err.errors[0].message || "An error occurred during sign up");
+        }
+      } else {
+        setError("An error occurred during sign up. Please try again.");
+      }
     }
   };
 
   // Handle submission of verification form
   const onVerifyPress = async () => {
     if (!isLoaded) return;
+
+    // Clear previous errors
+    setError("");
 
     try {
       // Use the code the user provided to attempt verification
@@ -61,14 +99,33 @@ export default function SignUpScreen() {
         // If the status is not complete, check why. User may need to
         // complete further steps.
         console.error(JSON.stringify(signUpAttempt, null, 2));
+        setError("Verification incomplete. Please try again.");
       }
     } catch (err) {
-      // See https://clerk.com/docs/custom-flows/error-handling
-      // for more info on error handling
       console.error(JSON.stringify(err, null, 2));
-      setError(
-        err.errors?.[0]?.message || "An error occurred during verification"
-      );
+
+      if (err.errors && err.errors.length > 0) {
+        const errorCode = err.errors[0].code;
+
+        switch (errorCode) {
+          case "form_code_incorrect":
+            setError("Incorrect verification code. Please try again");
+            break;
+          case "verification_expired":
+            setError("Verification code has expired. Please request a new one");
+            break;
+          case "verification_failed":
+            setError("Verification failed. Please try again");
+            break;
+          case "form_param_nil":
+            setError("Please enter the verification code");
+            break;
+          default:
+            setError(err.errors[0].message || "An error occurred during verification");
+        }
+      } else {
+        setError("An error occurred during verification. Please try again.");
+      }
     }
   };
 
@@ -99,6 +156,7 @@ export default function SignUpScreen() {
           style={[styles.verificationInput, error && styles.errorInput]}
           value={code}
           placeholder="Enter your verification code"
+          placeholderTextColor={COLORS.textLight}
           onChangeText={(code) => setCode(code)}
         />
         <TouchableOpacity onPress={onVerifyPress} style={styles.button}>

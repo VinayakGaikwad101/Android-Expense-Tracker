@@ -37,10 +37,38 @@ export default function Page() {
         console.error(JSON.stringify(signInAttempt, null, 2));
       }
     } catch (err) {
-      // See https://clerk.com/docs/custom-flows/error-handling
-      // for more info on error handling
       console.error(JSON.stringify(err, null, 2));
-      setError(err.errors?.[0]?.message || "An error occurred during sign in");
+
+      if (err.errors && err.errors.length > 0) {
+        const errorCode = err.errors[0].code;
+
+        switch (errorCode) {
+          case "form_password_incorrect":
+            setError("Incorrect credentials. Please try again");
+            break;
+          case "form_identifier_not_found":
+            setError("Incorrect credentials. Please try again");
+            break;
+          case "form_identifier_invalid":
+            setError("Please enter a valid email address");
+            break;
+          case "form_param_nil":
+            setError("Please fill in all required fields");
+            break;
+          case "session_exists":
+            setError("You are already signed in");
+            break;
+          case "too_many_requests":
+            setError("Too many sign-in attempts. Please try again later");
+            break;
+          default:
+            setError(
+              err.errors[0].message || "An error occurred during sign in"
+            );
+        }
+      } else {
+        setError("An error occurred during sign in. Please try again.");
+      }
     }
   };
 
