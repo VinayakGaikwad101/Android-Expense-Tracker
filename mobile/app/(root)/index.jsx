@@ -1,6 +1,13 @@
 import { SignedIn, SignedOut, useUser } from "@clerk/clerk-expo";
 import { useRouter } from "expo-router";
-import { FlatList, Image, Text, TouchableOpacity, View, RefreshControl } from "react-native";
+import {
+  FlatList,
+  Image,
+  Text,
+  TouchableOpacity,
+  View,
+  RefreshControl,
+} from "react-native";
 import { SignOutButton } from "@/components/SignOutButton";
 import { useTransactions } from "../../hooks/useTransactions";
 import { useEffect, useState } from "react";
@@ -33,18 +40,18 @@ export default function Page() {
     }, [loadData])
   );
 
-  const onRefresh = async () => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await loadData();
     setRefreshing(false);
-  };
+  }, [loadData]);
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
-      <Ionicons 
-        name="receipt-outline" 
-        size={64} 
-        color={COLORS.textLight} 
+      <Ionicons
+        name="receipt-outline"
+        size={64}
+        color={COLORS.textLight}
         style={styles.emptyStateIcon}
       />
       <Text style={styles.emptyStateTitle}>No Transactions Yet</Text>
@@ -105,6 +112,10 @@ export default function Page() {
         </View>
       </View>
 
+      <Text style={styles.refreshHintText}>
+        Pull down to refresh transactions
+      </Text>
+
       {/* render long lists in rn */}
       {/* lazy loads only those on the screen */}
       <FlatList
@@ -120,8 +131,11 @@ export default function Page() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={[COLORS.primary]}
-            tintColor={COLORS.primary}
+            colors={[COLORS.textLight]}
+            tintColor={COLORS.textLight}
+            progressViewOffset={20}
+            progressBackgroundColor={COLORS.background}
+            size="large"
           />
         }
         showsVerticalScrollIndicator={false}

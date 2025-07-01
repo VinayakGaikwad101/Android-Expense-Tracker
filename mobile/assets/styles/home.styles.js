@@ -261,4 +261,14 @@ export const styles = StyleSheet.create({
   transactionsListContent: {
     paddingBottom: 20,
   },
+  refreshHintText: {
+    fontSize: 12,
+    color: COLORS.textLight,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  refreshIndicator: {
+    borderRadius: 25,
+    overflow: 'hidden',
+  },
 });
