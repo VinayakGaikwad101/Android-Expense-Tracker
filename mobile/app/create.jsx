@@ -27,7 +27,7 @@ export default function CreateTransaction() {
   const [category, setCategory] = useState(categories[0].value);
   const [type, setType] = useState(types[0].value);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!title || !amount) {
       Alert.alert("Validation Error", "Please enter title and amount.");
       return;
@@ -43,8 +43,9 @@ export default function CreateTransaction() {
       amount: parsedAmount,
       category,
     };
-    addTransaction(newTransaction);
-    router.back();
+    await addTransaction(newTransaction);
+    // Navigate back and trigger a refresh
+    router.push("/(root)");
   };
 
   const handleAmountChange = (text) => {

@@ -4,6 +4,8 @@ import { FlatList, Image, Text, TouchableOpacity, View, RefreshControl } from "r
 import { SignOutButton } from "@/components/SignOutButton";
 import { useTransactions } from "../../hooks/useTransactions";
 import { useEffect, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 import PageLoader from "../../components/PageLoader";
 import { styles } from "../../assets/styles/home.styles";
 import { Ionicons } from "@expo/vector-icons";
@@ -23,6 +25,13 @@ export default function Page() {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  // Refresh data when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [loadData])
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);
