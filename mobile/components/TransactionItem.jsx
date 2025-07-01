@@ -1,11 +1,23 @@
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { styles } from "../assets/styles/home.styles";
 import { COLORS } from "../constants/colors";
 
 const TransactionItem = ({ transaction, onDelete }) => {
-  const isIncome = transaction.type === "income";
+  const isIncome = transaction.amount > 0;
+
+  const handleDelete = () => {
+    Alert.alert(
+      "Delete Transaction",
+      "Do you want to delete this transaction?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete", style: "destructive", onPress: () => onDelete(transaction.id) },
+      ],
+      { cancelable: true }
+    );
+  };
 
   return (
     <View style={styles.transactionCard}>
@@ -48,7 +60,7 @@ const TransactionItem = ({ transaction, onDelete }) => {
       </View>
       <TouchableOpacity
         style={styles.deleteButton}
-        onPress={() => onDelete(transaction.id)}
+        onPress={handleDelete}
       >
         <Ionicons name="trash-outline" size={24} color={COLORS.expense} />
       </TouchableOpacity>

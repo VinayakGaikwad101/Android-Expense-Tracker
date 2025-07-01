@@ -1,19 +1,21 @@
 import { SignedIn, SignedOut, useUser } from "@clerk/clerk-expo";
 import { useRouter } from "expo-router";
-import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
+import { FlatList, Image, Text, TouchableOpacity, View, RefreshControl } from "react-native";
 import { SignOutButton } from "@/components/SignOutButton";
 import { useTransactions } from "../../hooks/useTransactions";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import PageLoader from "../../components/PageLoader";
 import { styles } from "../../assets/styles/home.styles";
 import { Ionicons } from "@expo/vector-icons";
 import { BalanceCard } from "../../components/BalanceCard";
 import TransactionItem from "../../components/TransactionItem";
+import { COLORS } from "../../constants/colors";
+import Loader from "../../components/PageLoader";
 
 export default function Page() {
   const { user } = useUser();
-
   const router = useRouter();
+  const [refreshing, setRefreshing] = useState(false);
 
   const { transactions, summary, isLoading, loadData, deleteTransaction } =
     useTransactions(user.id);
@@ -22,7 +24,35 @@ export default function Page() {
     loadData();
   }, [loadData]);
 
-  if (isLoading) return <PageLoader />;
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
+  };
+
+  const renderEmptyState = () => (
+    <View style={styles.emptyState}>
+      <Ionicons 
+        name="receipt-outline" 
+        size={64} 
+        color={COLORS.textLight} 
+        style={styles.emptyStateIcon}
+      />
+      <Text style={styles.emptyStateTitle}>No Transactions Yet</Text>
+      <Text style={styles.emptyStateText}>
+        Start tracking your expenses by adding your first transaction
+      </Text>
+      <TouchableOpacity
+        style={styles.emptyStateButton}
+        onPress={() => router.push("/create")}
+      >
+        <Ionicons name="add" size={20} color={COLORS.white} />
+        <Text style={styles.emptyStateButtonText}>Add Transaction</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  if (isLoading) return <Loader />;
 
   console.log("Transactions: ", transactions);
   console.log("Summary: ", summary);
@@ -72,9 +102,20 @@ export default function Page() {
         style={styles.transactionsList}
         contentContainerStyle={styles.transactionsListContent}
         data={transactions}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <TransactionItem item={item} onDelete={handleDelete} />
+          <TransactionItem transaction={item} onDelete={deleteTransaction} />
         )}
+        ListEmptyComponent={renderEmptyState}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[COLORS.primary]}
+            tintColor={COLORS.primary}
+          />
+        }
+        showsVerticalScrollIndicator={false}
       />
     </View>
   );

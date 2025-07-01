@@ -22,16 +22,22 @@ export const useTransactions = (userId) => {
     try {
       const response = await fetch(`${API_URL}/transactions/${userId}`);
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
       const data = await response.json();
 
-      setTransactions(data);
-      console.log(`Fetched transaction for user: ${data}`);
+      if (response.ok && data.success && data.transactions) {
+        // Server returned transactions successfully
+        setTransactions(data.transactions);
+        console.log(`Fetched ${data.transactions.length} transactions for user`);
+      } else if (response.status === 404) {
+        // No transactions found - this is normal, not an error
+        setTransactions([]);
+        console.log("No transactions found for user - showing empty state");
+      } else {
+        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+      }
     } catch (error) {
       console.error("Error fetching transactions:", error);
+      setTransactions([]);
     }
   }, [userId]);
 
@@ -45,9 +51,16 @@ export const useTransactions = (userId) => {
 
       const data = await response.json();
 
-      setSummary(data);
-
-      console.log(`Summary set for user: ${data}`);
+      if (data.success) {
+        setSummary({
+          balance: data.balance,
+          income: data.income,
+          expenses: data.expenses,
+        });
+        console.log(`Summary fetched for user:`, data);
+      } else {
+        throw new Error(data.message || "Failed to fetch summary");
+      }
     } catch (error) {
       console.error("Error fetching summary:", error);
     }
@@ -69,18 +82,19 @@ export const useTransactions = (userId) => {
 
   const deleteTransaction = async (taskId) => {
     try {
-      const response = await fetch(`${API_URL}/transactions/${taskId}`, {
+      const id = parseInt(taskId);
+      if (isNaN(id) || id <= 0) throw new Error("Invalid transaction ID");
+      const response = await fetch(`${API_URL}/transactions/${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
       });
-
-      if (!response.ok) throw new Error("Failed to delete transaction");
-
-      // refresh after deletion of data
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Failed to delete transaction");
+      }
       loadData();
-
       Alert.alert("Success", "Transaction deleted successfully!");
     } catch (error) {
       console.error("Error deleting transaction:", error);
@@ -88,5 +102,27 @@ export const useTransactions = (userId) => {
     }
   };
 
-  return { transactions, summary, isLoading, deleteTransaction, loadData };
+  const addTransaction = async (transaction) => {
+    try {
+      const response = await fetch(`${API_URL}/transactions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ...transaction, user_id: userId }),
+      });
+
+      if (!response.ok) throw new Error("Failed to add transaction");
+
+      Alert.alert("Success", "Transaction added successfully!");
+
+      // Refresh transactions list after adding
+      await loadData();
+    } catch (error) {
+      console.error("Error adding transaction:", error);
+      Alert.alert("Error", error.message);
+    }
+  };
+
+  return { transactions, summary, isLoading, deleteTransaction, loadData, addTransaction };
 };
