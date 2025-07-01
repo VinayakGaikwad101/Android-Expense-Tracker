@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { styles } from "../assets/styles/home.styles";
 import { COLORS } from "../constants/colors";
+import { formatDate } from "../lib/utils";
 
 const TransactionItem = ({ transaction, onDelete }) => {
   const isIncome = transaction.amount > 0;
@@ -55,7 +56,7 @@ const TransactionItem = ({ transaction, onDelete }) => {
             {isIncome ? "+" : "-"}&#8377;
             {parseFloat(transaction.amount).toFixed(2)}
           </Text>
-          <Text style={styles.transactionDate}>{transaction.date}</Text>
+          <Text style={styles.transactionDate}>{formatDate(transaction.created_at)}</Text>
         </View>
       </View>
       <TouchableOpacity
