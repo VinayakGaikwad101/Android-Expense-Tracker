@@ -108,4 +108,14 @@ export const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
   },
+  buttonLoading: {
+    backgroundColor: COLORS.textLight,
+    opacity: 0.8,
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
 });

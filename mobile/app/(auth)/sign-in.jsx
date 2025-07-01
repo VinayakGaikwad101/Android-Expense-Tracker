@@ -1,6 +1,6 @@
 import { useSignIn } from "@clerk/clerk-expo";
 import { Link, useRouter } from "expo-router";
-import { Text, TextInput, TouchableOpacity, View, Image } from "react-native";
+import { Text, TextInput, TouchableOpacity, View, Image, ActivityIndicator } from "react-native";
 import { useState } from "react";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { styles } from "@/assets/styles/auth.styles.js";
@@ -14,10 +14,14 @@ export default function Page() {
   const [emailAddress, setEmailAddress] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   // Handle the submission of the sign-in form
   const onSignInPress = async () => {
-    if (!isLoaded) return;
+    if (!isLoaded || isLoading) return;
+
+    setIsLoading(true);
+    setError("");
 
     // Start the sign-in process using the email and password provided
     try {
@@ -69,6 +73,8 @@ export default function Page() {
       } else {
         setError("An error occurred during sign in. Please try again.");
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -118,8 +124,19 @@ export default function Page() {
           onChangeText={(password) => setPassword(password)}
         />
 
-        <TouchableOpacity onPress={onSignInPress} style={styles.button}>
-          <Text style={styles.buttonText}>Sign In</Text>
+        <TouchableOpacity 
+          onPress={onSignInPress} 
+          style={[styles.button, isLoading && styles.buttonLoading]}
+          disabled={isLoading}
+        >
+          <View style={styles.buttonContent}>
+            {isLoading && (
+              <ActivityIndicator size="small" color={COLORS.white} />
+            )}
+            <Text style={styles.buttonText}>
+              {isLoading ? "Signing In..." : "Sign In"}
+            </Text>
+          </View>
         </TouchableOpacity>
 
         <View style={styles.footerContainer}>

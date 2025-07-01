@@ -1,4 +1,4 @@
-import { Text, TextInput, TouchableOpacity, View, Image } from "react-native";
+import { Text, TextInput, TouchableOpacity, View, Image, ActivityIndicator } from "react-native";
 import { useSignUp } from "@clerk/clerk-expo";
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
@@ -16,11 +16,14 @@ export default function SignUpScreen() {
   const [pendingVerification, setPendingVerification] = useState(false);
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
+  const [isSignUpLoading, setIsSignUpLoading] = useState(false);
+  const [isVerifyLoading, setIsVerifyLoading] = useState(false);
 
   // Handle submission of sign-up form
   const onSignUpPress = async () => {
-    if (!isLoaded) return;
+    if (!isLoaded || isSignUpLoading) return;
 
+    setIsSignUpLoading(true);
     // Clear previous errors
     setError("");
 
@@ -74,13 +77,16 @@ export default function SignUpScreen() {
       } else {
         setError("An error occurred during sign up. Please try again.");
       }
+    } finally {
+      setIsSignUpLoading(false);
     }
   };
 
   // Handle submission of verification form
   const onVerifyPress = async () => {
-    if (!isLoaded) return;
+    if (!isLoaded || isVerifyLoading) return;
 
+    setIsVerifyLoading(true);
     // Clear previous errors
     setError("");
 
@@ -126,6 +132,8 @@ export default function SignUpScreen() {
       } else {
         setError("An error occurred during verification. Please try again.");
       }
+    } finally {
+      setIsVerifyLoading(false);
     }
   };
 
@@ -159,8 +167,19 @@ export default function SignUpScreen() {
           placeholderTextColor={COLORS.textLight}
           onChangeText={(code) => setCode(code)}
         />
-        <TouchableOpacity onPress={onVerifyPress} style={styles.button}>
-          <Text style={styles.buttonText}>Verify</Text>
+        <TouchableOpacity 
+          onPress={onVerifyPress} 
+          style={[styles.button, isVerifyLoading && styles.buttonLoading]}
+          disabled={isVerifyLoading}
+        >
+          <View style={styles.buttonContent}>
+            {isVerifyLoading && (
+              <ActivityIndicator size="small" color={COLORS.white} />
+            )}
+            <Text style={styles.buttonText}>
+              {isVerifyLoading ? "Verifying..." : "Verify"}
+            </Text>
+          </View>
         </TouchableOpacity>
       </View>
     );
@@ -209,8 +228,19 @@ export default function SignUpScreen() {
           onChangeText={(password) => setPassword(password)}
         />
 
-        <TouchableOpacity onPress={onSignUpPress} style={styles.button}>
-          <Text style={styles.buttonText}>Create Account</Text>
+        <TouchableOpacity 
+          onPress={onSignUpPress} 
+          style={[styles.button, isSignUpLoading && styles.buttonLoading]}
+          disabled={isSignUpLoading}
+        >
+          <View style={styles.buttonContent}>
+            {isSignUpLoading && (
+              <ActivityIndicator size="small" color={COLORS.white} />
+            )}
+            <Text style={styles.buttonText}>
+              {isSignUpLoading ? "Creating Account..." : "Create Account"}
+            </Text>
+          </View>
         </TouchableOpacity>
 
         <View style={styles.footerContainer}>
