@@ -1,5 +1,6 @@
 // modules
 import express from "express";
+import cors from "cors";
 import dotenv from "dotenv";
 import { initDB } from "./config/db.config.js";
 import rateLimiter from "./middlewares/rateLimiter.middleware.js";
@@ -10,6 +11,7 @@ dotenv.config();
 const app = express();
 
 // middleware
+app.use(cors()); // Enable CORS for all routes
 app.use(rateLimiter);
 app.use(express.json()); // to get access to req.body
 
