@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, ScrollView } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useRouter } from "expo-router";
 import { useTransactions } from "../hooks/useTransactions";
 import { useUser } from "@clerk/clerk-expo";
@@ -55,88 +56,95 @@ export default function CreateTransaction() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.heading}>Add New Transaction</Text>
+    <KeyboardAwareScrollView
+      style={{ flex: 1 }}
+      contentContainerStyle={{ flexGrow: 1 }}
+      enableOnAndroid={true}
+      enableAutomaticScroll={true}
+    >
+      <View style={styles.container}>
+          <Text style={styles.heading}>Add New Transaction</Text>
 
-      <Text style={styles.label}>Title</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter title"
-        value={title}
-        onChangeText={setTitle}
-      />
+          <Text style={styles.label}>Title</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter title"
+            value={title}
+            onChangeText={setTitle}
+          />
 
-      <Text style={styles.label}>Amount</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter amount"
-        value={amount}
-        onChangeText={handleAmountChange}
-        keyboardType="numeric"
-      />
+          <Text style={styles.label}>Amount</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter amount"
+            value={amount}
+            onChangeText={handleAmountChange}
+            keyboardType="numeric"
+          />
 
-      <Text style={styles.label}>Category</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter category (or pick below)"
-        value={category}
-        onChangeText={setCategory}
-      />
-      <View style={styles.optionsContainer}>
-        {categories.map((cat) => (
-          <TouchableOpacity
-            key={cat.value}
-            style={[
-              styles.optionButton,
-              category === cat.value && styles.optionButtonSelected,
-            ]}
-            onPress={() => setCategory(cat.value)}
-          >
-            <Text
-              style={[
-                styles.optionText,
-                category === cat.value && styles.optionTextSelected,
-              ]}
-            >
-              {cat.label}
-            </Text>
+          <Text style={styles.label}>Category</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter category (or pick below)"
+            value={category}
+            onChangeText={setCategory}
+          />
+          <View style={styles.optionsContainer}>
+            {categories.map((cat) => (
+              <TouchableOpacity
+                key={cat.value}
+                style={[
+                  styles.optionButton,
+                  category === cat.value && styles.optionButtonSelected,
+                ]}
+                onPress={() => setCategory(cat.value)}
+              >
+                <Text
+                  style={[
+                    styles.optionText,
+                    category === cat.value && styles.optionTextSelected,
+                  ]}
+                >
+                  {cat.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <Text style={styles.label}>Type</Text>
+          <View style={styles.optionsContainer}>
+            {types.map((t) => (
+              <TouchableOpacity
+                key={t.value}
+                style={[
+                  styles.optionButton,
+                  type === t.value && styles.optionButtonSelected,
+                ]}
+                onPress={() => setType(t.value)}
+              >
+                <Text
+                  style={[
+                    styles.optionText,
+                    type === t.value && styles.optionTextSelected,
+                  ]}
+                >
+                  {t.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+            <Ionicons name="checkmark-circle-outline" size={24} color="#fff" />
+            <Text style={styles.submitButtonText}>Add Transaction</Text>
           </TouchableOpacity>
-        ))}
-      </View>
 
-      <Text style={styles.label}>Type</Text>
-      <View style={styles.optionsContainer}>
-        {types.map((t) => (
-          <TouchableOpacity
-            key={t.value}
-            style={[
-              styles.optionButton,
-              type === t.value && styles.optionButtonSelected,
-            ]}
-            onPress={() => setType(t.value)}
-          >
-            <Text
-              style={[
-                styles.optionText,
-                type === t.value && styles.optionTextSelected,
-              ]}
-            >
-              {t.label}
-            </Text>
+          <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()}>
+            <Ionicons name="close-circle-outline" size={24} color={COLORS.expense} />
+            <Text style={styles.cancelButtonText}>Cancel</Text>
           </TouchableOpacity>
-        ))}
       </View>
-
-      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-        <Ionicons name="checkmark-circle-outline" size={24} color="#fff" />
-        <Text style={styles.submitButtonText}>Add Transaction</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()}>
-        <Ionicons name="close-circle-outline" size={24} color={COLORS.expense} />
-        <Text style={styles.cancelButtonText}>Cancel</Text>
-      </TouchableOpacity>
-    </ScrollView>
+    </KeyboardAwareScrollView>
   );
 }
 
